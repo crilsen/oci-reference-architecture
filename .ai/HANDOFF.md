@@ -2,7 +2,7 @@
 
 ## Resume block (read first)
 
-- Repo state: branch `dev`, HEAD `f3ca92e`, working tree dirty; Terraform, scripts, and context updates are uncommitted.
+- Repo state: branch `dev`, HEAD `3a39b9b`, working tree clean; all work committed and pushed to `origin/dev`.
 - Source of truth: `AGENTS.md` → `.ai/`
 - Budget / usage observed: `<unknown | value from the tool>`
 - Checkpoint updated: `2026-09-17`
