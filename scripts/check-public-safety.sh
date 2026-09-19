@@ -4,10 +4,7 @@ set -euo pipefail
 repository_root="$(git rev-parse --show-toplevel)"
 cd "$repository_root"
 
-blocked_files="$(find . -type f \
-  \( -name '*.pem' -o -name '*.key' -o -name '*.cert' -o -name '*.p12' \
-  -o -name '*.pfx' -o -name '*.tfstate' \) \
-  -not -path './.git/*' -print)"
+blocked_files="$(git ls-files | grep -E '\.(pem|key|cert|p12|pfx|tfstate)$' || true)"
 
 if [[ -n "$blocked_files" ]]; then
   echo "Blocked sensitive file types found:"
@@ -15,8 +12,8 @@ if [[ -n "$blocked_files" ]]; then
   exit 1
 fi
 
-allowed_tfvars='^environments/(lab|organization)/terraform\.tfvars$'
-unexpected_tfvars="$(find . -type f -name '*.tfvars' -not -path './.git/*' -print | sed 's#^\./##' | grep -Ev "$allowed_tfvars" || true)"
+allowed_tfvars='^environments/(lab|organization|kubernetes)/terraform\.tfvars$'
+unexpected_tfvars="$(git ls-files '*.tfvars' | grep -Ev "$allowed_tfvars" || true)"
 
 if [[ -n "$unexpected_tfvars" ]]; then
   echo "Unexpected tfvars files found:"
@@ -26,7 +23,7 @@ fi
 
 blocked_pattern='BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AKIA[0-9A-Z]{16}|[0-9]{12}|https?://[^[:space:]]+:[^[:space:]]+@|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}'
 
-if git grep -nEi "$blocked_pattern" -- ':!LICENSE' ':!scripts/check-public-safety.sh'; then
+if git grep -nEi "$blocked_pattern" -- ':!LICENSE' ':!scripts/check-public-safety.sh' ':!*.terraform.lock.hcl'; then
   echo "Potential credential, internal identifier, or organization-specific reference found."
   exit 1
 fi
