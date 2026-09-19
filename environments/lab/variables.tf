@@ -1,19 +1,5 @@
-variable "oci_region" {
-  description = "OCI region used by the lab."
-  type        = string
-}
-
-variable "project_name" {
-  description = "Generic prefix for OCI lab resources."
-  type        = string
-}
-
-variable "kubernetes_version" {
-  description = "Kubernetes version for OKE."
-  type        = string
-}
-
-variable "vcn_cidr" {
-  description = "Address range for the lab virtual cloud network."
-  type        = string
-}
+variable "tenancy_ocid" { type = string }
+variable "compartment_ocid" { type = string }
+variable "oci_region" { type = string }
+variable "project_name" { type = string }
+variable "vcn_cidr" { type = string }

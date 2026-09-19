@@ -6,6 +6,7 @@
 *.tfvars
 *.tfvars.json
 !environments/lab/terraform.tfvars
+!environments/kubernetes/terraform.tfvars
 !environments/organization/terraform.tfvars
 crash.log
 crash.*.log

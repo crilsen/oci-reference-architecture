@@ -1,0 +1,22 @@
+#cloud-config
+package_update: true
+runcmd:
+  - modprobe overlay
+  - modprobe br_netfilter
+  - sysctl -w net.ipv4.ip_forward=1
+  - apt-get update
+  - apt-get install -y ca-certificates curl gpg containerd
+  - mkdir -p /etc/apt/keyrings
+  - curl -fsSL https://pkgs.k8s.io/core:/stable:/${kubernetes_version}/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+  - echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/${kubernetes_version}/deb/ /" > /etc/apt/sources.list.d/kubernetes.list
+  - apt-get update && apt-get install -y kubelet kubeadm kubectl
+  - containerd config default > /etc/containerd/config.toml
+  - sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
+  - systemctl restart containerd
+%{ if role == "control-plane" ~}
+  - kubeadm init --token ${token} --apiserver-advertise-address=${control_plane_ip} --pod-network-cidr=${pod_cidr}
+  - kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
+%{ else ~}
+  - until curl -k --connect-timeout 2 https://${control_plane_ip}:${api_server_port}/healthz; do sleep 10; done
+  - kubeadm join ${control_plane_ip}:${api_server_port} --token ${token} --discovery-token-unsafe-skip-ca-verification
+%{ endif ~}
